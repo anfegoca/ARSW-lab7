@@ -6,8 +6,11 @@ function Square(props) {
     );
 }
 function BBServiceURL() {
-    return 'ws://localhost:8080/bbService';
-}
+    var host = window.location.host;
+    var url = 'wss://' + (host) + '/bbService';
+    console.log("URL Calculada: " + url);
+    return url;
+   }
 class Board extends React.Component {
 
 
