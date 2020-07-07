@@ -9,54 +9,21 @@ function BBServiceURL() {
     return 'ws://localhost:8080/bbService';
 }
 class Board extends React.Component {
-    constructor(props) {
-        super(props);
-        
-        this.comunicationWS = new WSBBChannel(BBServiceURL(),
-            (msg) => {
-                var obj = JSON.parse(msg);
-                console.log("On func call back ", msg);
-                this.handleClick(obj.value);
-            }
 
-        );
-        this.state = {
-            squares: Array(9).fill(null),
-            xIsNext: true,
-            wsreference: this.comunicationWS,
-        };
-        
-
-
-    }
-
-    handleClick(i) {
-        console.log("HOLA "+i );
-        this.state.wsreference.send(this.props.sala,i);
-        
-        const squares = this.state.squares.slice();
-        squares[i] = this.state.xIsNext ? 'X' : 'O';
-        this.setState({
-            squares: squares,
-            xIsNext: !this.state.xIsNext,
-        });
-    }
 
     renderSquare(i) {
         return (
             <Square
-                value={this.state.squares[i]}
-                onClick={() => this.handleClick(i)}
+                value={this.props.squares[i]}
+                onClick={() => this.props.onClick(i)}
             />
         );
     }
 
-    render() {
-        const status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
 
+    render() {
         return (
             <div>
-                <div className="status">{status}</div>
                 <div className="board-row">
                     {this.renderSquare(0)}
                     {this.renderSquare(1)}
@@ -78,15 +45,89 @@ class Board extends React.Component {
 }
 
 class Game extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.comunicationWS = new WSBBChannel(BBServiceURL(),
+            (msg) => {
+                if (msg[0] === "est") {
+                    this.setState({ estado: msg[1] });
+                } else if (msg[0] === "mov") {
+                    this.jugar(msg[1]);
+                }
+                //var obj = JSON.parse(msg);
+                //console.log("On func call back ", msg);
+                //this.handleClick(obj.value);
+            }
+
+            , this.props.sala, this.props.username);
+        this.state = {
+            estado: " ",
+            squares: Array(9).fill(null),
+            wsreference: this.comunicationWS,
+            history: [],
+            stepNumber: 0,
+        };
+
+
+
+    }
+
+    jumpTo(move) {
+        this.state.wsreference.send("His", this.props.sala, this.props.username, move);
+    }
+    jugar(movs) {
+        var history = [];
+        const squares2 = this.state.squares.slice();
+        let temp = movs.split(",");
+        var cont=0;
+        for (var i = 0; i < 9; i++) {
+            if (temp[i] === "X" || temp[i] === "O") {
+                squares2[i] = temp[i];
+                history=history.concat(cont);
+                cont++;
+            }else{
+                squares2[i]=null;
+            }
+        }
+
+        //squares[i] = x;
+        this.setState({
+            history: history,
+            stepNumber: history.length,
+            squares: squares2,
+        });
+        //this.setState({
+        //   squares: squares,
+        //});
+    }
+    handleClick(i) {
+        this.state.wsreference.send("Mov", this.props.sala, this.props.username, i);
+    }
     render() {
+        const status = this.state.estado;
+        const history = this.state.history;
+        const moves = history.map((step, move) => {
+            const desc = move ?
+              'Go to move #' + move :
+              'Go to game start';
+            return (
+              <li key={move}>
+                <button onClick={() => this.jumpTo(move)}>{desc}</button>
+              </li>
+            );
+        });
         return (
             <div className="game">
                 <div className="game-board">
-                    <Board sala={this.props.sala}/>
+                    <Board
+                        squares={this.state.squares}
+                        onClick={i => this.handleClick(i)}
+                    />
                 </div>
                 <div className="game-info">
-                    <div>{/* status */}</div>
-                    <ol>{/* TODO */}</ol>
+                    <div>{status}</div>
+                    <ol>{moves}</ol>
                 </div>
             </div>
         );
@@ -118,7 +159,6 @@ class MyForm extends React.Component {
         this.setState({ [nam]: val });
     }
     render() {
-        console.log(this.state.visible);
         return (
             <div>
                 <form onSubmit={this.mySubmitHandler} >
@@ -137,10 +177,10 @@ class MyForm extends React.Component {
                     />
                     <br />
                     <br />
-                    <input type='submit' />
+                    {!this.state.visible ? <input type='submit' /> : null}
                 </form>
                 {"Sala:" + this.state.sala}
-                {this.state.visible ? <Game sala={this.state.sala}/> : null}
+                {this.state.visible ? <Game sala={this.state.sala} username={this.state.username} /> : null}
             </div>
         );
     }
@@ -157,16 +197,19 @@ function BBServiceURL() {
     return 'ws://localhost:8080/bbService';
 }
 class WSBBChannel {
-    constructor(URL, callback) {
+    constructor(URL, callback, sala, username) {
         this.URL = URL;
         this.wsocket = new WebSocket(URL);
         this.wsocket.onopen = (evt) => this.onOpen(evt);
         this.wsocket.onmessage = (evt) => this.onMessage(evt);
         this.wsocket.onerror = (evt) => this.onError(evt);
         this.receivef = callback;
+        this.sala = sala;
+        this.username = username;
     }
     onOpen(evt) {
         console.log("In onOpen", evt);
+        this.send("Sala", this.sala, this.username, "");
     }
     onMessage(evt) {
         console.log("In onMessage", evt);
@@ -174,14 +217,15 @@ class WSBBChannel {
         // El primer mensaje solo confirma que se estableció la conexión.
         // De ahí en adelante intercambiaremos solo puntos(x,y) con el servidor
         if (evt.data != "Connection established.") {
-            this.receivef(evt.data);
+            let mens = evt.data.split("/");
+            this.receivef(mens);
         }
     }
     onError(evt) {
         console.error("In onError", evt);
     }
-    send(sala,i) {
-        let msg = '{ "sala": ' + (sala) + ', "value": ' + (i) + "}";
+    send(text, num, jug, mov) {
+        let msg = (text) + " " + (num) + " " + (jug) + " " + (mov);
         console.log("sending: ", msg);
         this.wsocket.send(msg);
     }

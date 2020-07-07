@@ -2,8 +2,7 @@ package co.edu.escuelaing.arsw.tictactoe.beans;
 
 import java.io.IOException;
 import java.util.logging.Level;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.Hashtable;
 import java.util.logging.Logger;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
@@ -17,36 +16,68 @@ import org.springframework.stereotype.Component;
 @ServerEndpoint("/bbService")
 public class TicTacToeEndPoint {
     private static final Logger logger = Logger.getLogger(TicTacToeEndPoint.class.getName());
-    /* Queue for all open WebSocket sessions */
-    static Queue<Session> queue = new ConcurrentLinkedQueue<>();
-    Session ownSession = null;
 
-    /* Call this method to send a message to all clients */
-    public void send(String msg) {
-        try {
-            /* Send updates to all open WebSocket sessions */
-            for (Session session : queue) {
-                if (!session.equals(this.ownSession)) {
-                    session.getBasicRemote().sendText(msg);
-                }
-                logger.log(Level.INFO, "Sent: {0}", msg);
-            }
-        } catch (IOException e) {
-            logger.log(Level.INFO, e.toString());
-        }
-    }
+    static Hashtable<Integer, Sala> salas = new Hashtable<>();
 
     @OnMessage
     public void processPoint(String message, Session session) {
-        System.out.println("Point received:" + message + ". From session: " + session);
-        this.send(message);
+        String[] msg = message.split(" ");
+        System.out.println(msg[0] + "Point" + msg[2] + "received: " + msg[1] + ". From session: " + session);
+        if ("Sala".equals(msg[0])) {
+            Integer num = Integer.parseInt(msg[1]);
+            if (!salas.containsKey(num)) {
+                Sala nueva = new Sala(new Jugador(msg[2],session,"X"));
+                salas.put(num, nueva);
+
+            } else {
+                Sala sala = salas.get(num);
+                if (sala.isFull()) {
+                    try {
+                        session.getBasicRemote().sendText("est/ La sala está llena");
+                    } catch (IOException e) {
+                        logger.log(Level.INFO, e.toString());
+                    }
+                } else {
+                    sala.agregarJugador(msg[2], session);
+                }
+            }
+        } else if ("Mov".equals(msg[0])) {
+
+            Integer num = Integer.parseInt(msg[1]);
+            Sala sala = salas.get(num);
+            Integer mov = Integer.parseInt(msg[3]);
+            if (!sala.isFull()) {
+                try {
+                    session.getBasicRemote().sendText("est/ invite a otro jugador a la sala para comenzar");
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+
+            } else {
+
+                if (sala.getActual().getNombre().equals(msg[2])) {
+                    sala.move(mov);
+                } else {
+                    try {
+                        session.getBasicRemote().sendText("est/ No es su turno");
+                    } catch (IOException e) {
+                        logger.log(Level.INFO, e.toString());
+                    }
+                }
+            }
+
+        }else if("His".equals(msg[0])){
+            Integer num = Integer.parseInt(msg[1]);
+            Sala sala = salas.get(num);
+            Integer estado = Integer.parseInt(msg[3]);
+            sala.devolver(estado);
+        }
+
     }
 
     @OnOpen
     public void openConnection(Session session) {
-        /* Register this connection in the queue */
-        queue.add(session);
-        ownSession = session;
         logger.log(Level.INFO, "Connection opened.");
         try {
             session.getBasicRemote().sendText("Connection established.");
@@ -57,16 +88,16 @@ public class TicTacToeEndPoint {
 
     @OnClose
     public void closedConnection(Session session) {
-        /* Remove this connection from the queue */
-        queue.remove(session);
+        for(Sala s: salas.values()){
+            s.sacarJugador(session);
+        }
         logger.log(Level.INFO, "Connection closed.");
     }
 
     @OnError
     public void error(Session session, Throwable t) {
-        /* Remove this connection from the queue */
-        queue.remove(session);
         logger.log(Level.INFO, t.toString());
+        t.printStackTrace();
         logger.log(Level.INFO, "Connection error.");
     }
 }
