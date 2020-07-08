@@ -1,4 +1,4 @@
-package co.edu.escuelaing.arsw.tictactoe.beans;
+package co.edu.escuelaing.arsw.tictactoe.entities;
 
 import javax.websocket.Session;
 

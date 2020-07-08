@@ -1,4 +1,4 @@
-package co.edu.escuelaing.arsw.tictactoe.beans;
+package co.edu.escuelaing.arsw.tictactoe;
 
 import java.util.Collections;
 
@@ -9,8 +9,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class TicTacToe {
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(TicTacToe.class);
-
-        app.setDefaultProperties(Collections.singletonMap("server.port", getPort()));
+        app.setDefaultProperties(Collections.singletonMap("spring.data.mongodb.uri","mongodb+srv://admin:arsw1234@tictactoedb.ybcuz.mongodb.net/TicTacToe?retryWrites=true&w=majority"));
+        //app.setDefaultProperties(Collections.singletonMap("server.port", getPort()));
         app.run(args);
     }
 

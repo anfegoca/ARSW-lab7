@@ -1,13 +1,16 @@
-package co.edu.escuelaing.arsw.tictactoe.beans;
+package co.edu.escuelaing.arsw.tictactoe.entities;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+
 
 import javax.websocket.Session;
 
-public class Sala {
+import org.springframework.data.annotation.Id;
 
+public class Sala {
+    @Id
+    private int id;
     private Jugador jugador1;
     private Jugador jugador2;
     private String[] tablero;
@@ -15,8 +18,13 @@ public class Sala {
     private Jugador ganador;
     private String estado;
     private ArrayList<String> historial;
+    
+    public Sala(){
 
-    public Sala(Jugador jugador) {
+    }
+
+    public Sala(int id,Jugador jugador) {
+        this.id=id;
         this.jugador1 = jugador;
         this.actual=jugador;
         this.jugador2 = null;
@@ -168,5 +176,46 @@ public class Sala {
     public void setEstado(String estado) {
         this.estado = estado;
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public Jugador getJugador1() {
+        return jugador1;
+    }
+
+    public void setJugador1(Jugador jugador1) {
+        this.jugador1 = jugador1;
+    }
+
+    public Jugador getJugador2() {
+        return jugador2;
+    }
+
+    public void setJugador2(Jugador jugador2) {
+        this.jugador2 = jugador2;
+    }
+
+    public String[] getTablero() {
+        return tablero;
+    }
+
+    public void setTablero(String[] tablero) {
+        this.tablero = tablero;
+    }
+
+    public ArrayList<String> getHistorial() {
+        return historial;
+    }
+
+    public void setHistorial(ArrayList<String> historial) {
+        this.historial = historial;
+    }
+    
 
 }
