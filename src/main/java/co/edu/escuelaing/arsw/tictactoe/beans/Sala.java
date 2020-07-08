@@ -14,7 +14,7 @@ public class Sala {
     private Jugador actual;
     private Jugador ganador;
     private String estado;
-    private ArrayList<String[]> historial;
+    private ArrayList<String> historial;
 
     public Sala(Jugador jugador) {
         this.jugador1 = jugador;
@@ -67,10 +67,9 @@ public class Sala {
             res+=tablero[i]+",";
         }
         res+=tablero[8];
-        String[] copia = tablero.clone();
-        //System.out.println("ADD ");
-        //printArray(copia);
-        historial.add(copia);
+        System.out.println("ADD ");
+        System.out.println(res);
+        historial.add(res);
         try {
             jugador1.getSesion().getBasicRemote().sendText("mov/"+ res);
             jugador2.getSesion().getBasicRemote().sendText("mov/"+ res);
@@ -80,12 +79,16 @@ public class Sala {
         }
     }
     public void devolver(int estado){
-        //System.out.println("HOLA "+estado);
+        System.out.println("HOLA "+estado);
         //printArray(historial.get(estado));
-        tablero=historial.get(estado);
-        for(int i=estado;i<historial.size();i++){
-            historial.remove(i);
+        String res = historial.get(estado);
+        System.out.println(res);
+        tablero=res.split(",");
+        ArrayList<String> nuevo = new ArrayList<>();
+        for(int i=0;i<estado+1;i++){
+            nuevo.add(historial.get(i));
         }
+        historial=nuevo;
         enviarMovimiento();
     }
     public void printArray(String[] array){
