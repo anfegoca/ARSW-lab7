@@ -1,3 +1,4 @@
+/*
 package co.edu.escuelaing.arsw.tictactoe.repository;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -11,3 +12,4 @@ public interface SalaRepository extends MongoRepository<Sala, Integer> {
   
 
 }
+*/

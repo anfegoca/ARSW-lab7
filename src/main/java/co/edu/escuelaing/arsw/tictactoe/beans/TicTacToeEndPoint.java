@@ -18,35 +18,41 @@ import org.springframework.stereotype.Component;
 
 import co.edu.escuelaing.arsw.tictactoe.entities.Jugador;
 import co.edu.escuelaing.arsw.tictactoe.entities.Sala;
-import co.edu.escuelaing.arsw.tictactoe.repository.SalaRepository;
+//import co.edu.escuelaing.arsw.tictactoe.repository.SalaRepository;
 
 @Component
 @ServerEndpoint("/bbService")
 public class TicTacToeEndPoint {
 
-    @Autowired
-    private SalaRepository repository;
-
     private static final Logger logger = Logger.getLogger(TicTacToeEndPoint.class.getName());
+    
+    //@Autowired
+    //private SalaRepository repository;
+    
+    
 
-    //static Hashtable<Integer, Sala> salas = new Hashtable<>();
+    
+
+    static Hashtable<Integer, Sala> salas = new Hashtable<>();
 
     @OnMessage
     public void processPoint(String message, Session session) {
         String[] msg = message.split(" ");
-        //System.out.println(msg[0] + "Point" + msg[2] + "received: " + msg[1] + ". From session: " + session);
+        //System.out.println(msg[0] + "Sala" + msg[1] + "NOmbre: " + msg[2] + ". From session: " + session);
+        
         if ("Sala".equals(msg[0])) {
             Integer num = Integer.parseInt(msg[1]);
-            System.out.println("REPOS "+repository);
-            Optional<Sala> cons = repository.findById(num);
-            Sala sala = cons.get();
-            if (sala==null) {
+            //System.out.println("REPOS "+repository);
+            //Optional<Sala> cons = repository.findById(num);
+            //Sala sala = cons.get();
+            if(!salas.containsKey(num)){
+            //if (sala==null) {
                 Sala nueva = new Sala(num,new Jugador(msg[2],session,"X"));
-                repository.save(nueva);
-                //salas.put(num, nueva);
+                //repository.save(nueva);
+                salas.put(num, nueva);
 
             } else {
-                //Sala sala = salas.get(num);
+                Sala sala = salas.get(num);
                 if (sala.isFull()) {
                     try {
                         session.getBasicRemote().sendText("est/ La sala está llena");
@@ -54,15 +60,18 @@ public class TicTacToeEndPoint {
                         logger.log(Level.INFO, e.toString());
                     }
                 } else {
+                    
                     sala.agregarJugador(msg[2], session);
                 }
             }
         } else if ("Mov".equals(msg[0])) {
 
             Integer num = Integer.parseInt(msg[1]);
-            Optional<Sala> cons = repository.findById(num);
-            Sala sala = cons.get();
+            Sala sala = salas.get(num);
+            //Optional<Sala> cons = repository.findById(num);
+            //Sala sala = cons.get();
             Integer mov = Integer.parseInt(msg[3]);
+            
             if (!sala.isFull()) {
                 try {
                     session.getBasicRemote().sendText("est/ invite a otro jugador a la sala para comenzar");
@@ -86,10 +95,11 @@ public class TicTacToeEndPoint {
 
         }else if("His".equals(msg[0])){
             Integer num = Integer.parseInt(msg[1]);
-            Optional<Sala> sala= repository.findById(num);
-            //Sala sala = salas.get(num);
+            //Optional<Sala> sala= repository.findById(num);
+            Sala sala = salas.get(num);
             Integer estado = Integer.parseInt(msg[3]);
-            sala.get().devolver(estado);
+            //sala.get().devolver(estado);
+            sala.devolver(estado);
         }
 
     }
@@ -106,8 +116,8 @@ public class TicTacToeEndPoint {
 
     @OnClose
     public void closedConnection(Session session) {
-        List<Sala> salas = repository.findAll();
-        for(Sala s: salas){
+        //List<Sala> salas = repository.findAll();
+        for(Sala s: salas.values()){
             s.sacarJugador(session);
         }
         logger.log(Level.INFO, "Connection closed.");

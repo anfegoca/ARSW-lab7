@@ -6,10 +6,11 @@ import java.util.ArrayList;
 
 import javax.websocket.Session;
 
-import org.springframework.data.annotation.Id;
+
+//import org.springframework.data.annotation.Id;
 
 public class Sala {
-    @Id
+    //@Id
     private int id;
     private Jugador jugador1;
     private Jugador jugador2;
@@ -18,11 +19,11 @@ public class Sala {
     private Jugador ganador;
     private String estado;
     private ArrayList<String> historial;
-    
+    /*
     public Sala(){
 
     }
-
+    */
     public Sala(int id,Jugador jugador) {
         this.id=id;
         this.jugador1 = jugador;
@@ -47,6 +48,7 @@ public class Sala {
         actualizarEstado();
 
     }
+ 
     public void sacarJugador(Session sesion){
         if(sesion.equals(jugador1.getSesion())){
             System.out.println("P1");
@@ -75,8 +77,8 @@ public class Sala {
             res+=tablero[i]+",";
         }
         res+=tablero[8];
-        System.out.println("ADD ");
-        System.out.println(res);
+        //System.out.println("ADD ");
+        //System.out.println(res);
         historial.add(res);
         try {
             jugador1.getSesion().getBasicRemote().sendText("mov/"+ res);
@@ -87,10 +89,10 @@ public class Sala {
         }
     }
     public void devolver(int estado){
-        System.out.println("HOLA "+estado);
+        //System.out.println("HOLA "+estado);
         //printArray(historial.get(estado));
         String res = historial.get(estado);
-        System.out.println(res);
+        //System.out.println(res);
         tablero=res.split(",");
         ArrayList<String> nuevo = new ArrayList<>();
         for(int i=0;i<estado+1;i++){
@@ -99,11 +101,7 @@ public class Sala {
         historial=nuevo;
         enviarMovimiento();
     }
-    public void printArray(String[] array){
-        for(int i=0;i<array.length;i++){
-            System.out.println(array[i]);
-        }
-    }
+
 
     public void actualizarEstado() {
         if (ganador == null) {
