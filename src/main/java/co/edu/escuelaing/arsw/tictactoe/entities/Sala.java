@@ -33,7 +33,11 @@ public class Sala {
         this.tablero = new String[9];
         this.historial=new ArrayList<>();
     }
-
+    /**
+     * Agregar un nuevo jugador a la sala
+     * @param nombre nombre del jugador
+     * @param sesion Session del jugador
+     */
     public void agregarJugador(String nombre, Session sesion) {
         System.out.println("ANTES"+tablero.length);
         if (jugador1 == null) {
@@ -48,7 +52,10 @@ public class Sala {
         actualizarEstado();
 
     }
- 
+    /**
+     * Elimina al jugador de la sala
+     * @param sesion sesion del jugador
+     */
     public void sacarJugador(Session sesion){
         if(sesion.equals(jugador1.getSesion())){
             System.out.println("P1");
@@ -58,7 +65,10 @@ public class Sala {
             System.out.println("P1");
         }
     }
-
+    /**
+     * Realiza un movimiento para el jugador actual
+     * @param mov int posición del tablero donde se realizará el movimiento
+     */
     public void move(int mov) {
         tablero[mov]=actual.getSimbolo();
         enviarMovimiento();
@@ -71,6 +81,9 @@ public class Sala {
         actualizarEstado();
 
     }
+    /**
+     * Envia el movimiento para que el cliente actualice el tablero
+     */
     public void enviarMovimiento(){
         String res = "";
         for(int i=0; i<tablero.length-1;i++){
@@ -88,6 +101,10 @@ public class Sala {
             e.printStackTrace();
         }
     }
+    /**
+     * Devuelve el tablero al estado anterior dado
+     * @param estado int con el estado anterior 
+     */
     public void devolver(int estado){
         //System.out.println("HOLA "+estado);
         //printArray(historial.get(estado));
@@ -102,7 +119,9 @@ public class Sala {
         enviarMovimiento();
     }
 
-
+    /**
+     * Actualiza el estado de la sala
+     */
     public void actualizarEstado() {
         if (ganador == null) {
             estado = "est/Turno de: " + actual.getNombre();
@@ -123,12 +142,18 @@ public class Sala {
             e.printStackTrace();
         }
     }
-
+    /**
+     * Dice si la sala está llena
+     * @return boolean
+     */
     public boolean isFull() {
         return (jugador1 != null && jugador2 != null);
     }
-
-    public Jugador calGanador() {
+    /**
+     * Calcula al ganador del juego
+     * @return Jugador que gano
+     */
+    private Jugador calGanador() {
         Jugador gano = null;
         int[][] posibles = { { 0, 1, 2 }, { 3, 4, 5 }, { 6, 7, 8 }, { 0, 3, 6 }, { 1, 4, 7 }, { 2, 5, 8 }, { 0, 4, 8 },
                 { 2, 4, 6 }, };

@@ -106,7 +106,11 @@ This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.t
 
 ## Design
 
-![class](https://github.com/anfegoca/ARSW-lab7/blob/master/resources/7.png)
+![class](https://github.com/anfegoca/ARSW-lab7/blob/master/resources/Class Diagram0.png)
+
+El programa empieza cuando desde el usuario digita su nombre y sala en el componente de **React**, ahí se crea otro componente el cual tiene el tablero del juego y se crea un web
+socket entre la aplicación y el cliente, los datos suministrados por el cliente se usan en el **TicTacToeEndPoint** para crear la sala si no existe, para crear la **sala** se necesita su **id** y un **Jugador**
+en el cual guardaremos el simbolo con el que va a jugar ,("X" o "O"), la sesión del navegador y el nombre que puso en el formulario, se crea la **sala** y se guarda en **mongoDB**, cada vez que se conecte un nuevo cliente el  **TicTacToeEndPoint** consultará la base de datos para obtener la sala correspondiente a la **id** dada por el cliente, en caso de que ya exista utilizará el metodó **añadirJugador** de la **sala** el cual le envia información al cliente de la sala para que pueda tener el estado actual de la sala, cuando un cliente cierra la sesión se busca su sala y se elimina el jugador.
 
 
 ## JavaDoc

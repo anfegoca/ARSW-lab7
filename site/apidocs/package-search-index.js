@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"co.edu.escuelaing.arsw.tictactoe"},{"l":"co.edu.escuelaing.arsw.tictactoe.beans"},{"l":"co.edu.escuelaing.arsw.tictactoe.entities"},{"l":"co.edu.escuelaing.arsw.tictactoe.repository"}]
